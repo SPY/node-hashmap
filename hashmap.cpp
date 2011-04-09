@@ -62,8 +62,9 @@ public:
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "remove", Remove);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "each", Each);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "empty", Empty);
+        NODE_SET_PROTOTYPE_METHOD(constructor_template, "clear", Clear);
         target->Set(String::NewSymbol("HashMap"), constructor_template->GetFunction());
-    }
+    };
 
     static Handle<Value> New(const Arguments &args) {
         HandleScope scope;
@@ -114,6 +115,13 @@ public:
         return hashmap->empty();
     }
 
+    static Handle<Value> Clear(const Arguments& args)
+    {
+        HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(args.This());
+        hashmap->clear();
+        return Undefined();
+    }
+
     //own methods
     void set(const Handle<Value>& key, const Handle<Value>& value){
         m_hashmap[*key] = *value;
@@ -149,6 +157,11 @@ public:
     Handle<Value> empty()
     {
         return m_hashmap.empty() ? True() : False();
+    }
+
+    void clear()
+    {
+        m_hashmap.clear();
     }
 };
 

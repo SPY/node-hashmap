@@ -6,7 +6,7 @@ var a = function(){return 12;},//{ b : 12},
     c = function(){return 45;};//{ o : 45};
 
 var l = function(){console.log.apply(console, arguments)}
-
+l('empty', hash.empty())
 hash.set('ololo', 55)
 hash.set(a, 12);
 hash.set(c, 8);
@@ -20,4 +20,6 @@ l('c ', hash.get(c));
 l('fn ', hash.each(function(k,v) {l(k,v); throw 'ololo';}))
 l('remove a : ', hash.remove(a))
 l('a ', hash.get(a))
-
+l('empty', hash.empty())
+hash.clear()
+l('empty', hash.empty())
