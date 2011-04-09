@@ -103,7 +103,10 @@ public:
     {
         HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(args.This());
 
-        hashmap->each(Handle<Function>::Cast(args[0]));
+        hashmap->each(Handle<Function>::Cast(args[0]),
+                      args.Length() > 1 ?
+                        Handle<Object>::Cast(args[1]) :
+                        Context::GetCurrent()->Global());
 
         return Undefined();
     }
@@ -140,7 +143,7 @@ public:
         return value;
     }
 
-    void each(Handle<Function> fn)
+    void each(Handle<Function> fn, Handle<Object> scope)
     {
         for(ValueHash::iterator i = m_hashmap.begin(); i != m_hashmap.end(); ++i)
         {
@@ -150,7 +153,7 @@ public:
 
             TryCatch try_catch;
 
-            fn->Call(Context::GetCurrent()->Global(), 2, argv);
+            fn->Call(scope, 2, argv);
         }
     }
 
