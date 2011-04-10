@@ -67,7 +67,6 @@ public:
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "get", Get);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "remove", Remove);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "each", Each);
-        NODE_SET_PROTOTYPE_METHOD(constructor_template, "empty", Empty);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "clear", Clear);
         constructor_template->PrototypeTemplate()->SetAccessor(
                 String::NewSymbol("length"),
@@ -119,13 +118,6 @@ public:
                         Context::GetCurrent()->Global());
 
         return Undefined();
-    }
-
-    static Handle<Value> Empty(const Arguments& args)
-    {
-        HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(args.This());
-
-        return hashmap->empty();
     }
 
     static Handle<Value> Clear(const Arguments& args)
@@ -184,11 +176,6 @@ public:
 
             fn->Call(scope, 2, argv);
         }
-    }
-
-    Handle<Value> empty()
-    {
-        return m_hashmap.empty() ? True() : False();
     }
 
     void clear()
