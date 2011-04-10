@@ -69,6 +69,10 @@ public:
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "each", Each);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "empty", Empty);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "clear", Clear);
+        constructor_template->PrototypeTemplate()->SetAccessor(
+                String::NewSymbol("length"),
+                Length
+            );
         target->Set(String::NewSymbol("HashMap"), constructor_template->GetFunction());
     }
 
@@ -131,6 +135,12 @@ public:
         return Undefined();
     }
 
+    static Handle<Value> Length(Local<String> property, const AccessorInfo &info)
+    {
+        HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(info.This());
+        return hashmap->length();
+    }
+
     //own methods
     void set(const Handle<Value>& key, const Handle<Value>& value){
         ValueHash::iterator i = m_hashmap.find(*key);
@@ -185,6 +195,11 @@ public:
     {
         FreeValues();
         m_hashmap.clear();
+    }
+
+    Handle<Integer> length()
+    {
+        return Integer::NewFromUnsigned(m_hashmap.size());
     }
 
     private:
