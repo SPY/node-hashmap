@@ -68,6 +68,7 @@ public:
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "remove", Remove);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "each", Each);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "clear", Clear);
+        NODE_SET_PROTOTYPE_METHOD(constructor_template, "hasKey", HasKey);
         constructor_template->PrototypeTemplate()->SetAccessor(
                 String::NewSymbol("length"),
                 Length
@@ -115,7 +116,8 @@ public:
         hashmap->each(Handle<Function>::Cast(args[0]),
                       args.Length() > 1 ?
                         Handle<Object>::Cast(args[1]) :
-                        Context::GetCurrent()->Global());
+                        Context::GetCurrent()->Global(),
+                      args.This());
 
         return Undefined();
     }
@@ -125,6 +127,12 @@ public:
         HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(args.This());
         hashmap->clear();
         return Undefined();
+    }
+
+    static Handle<Value> HasKey(const Arguments& args)
+    {
+        HashMap* hashmap = ObjectWrap::Unwrap<HashMap>(args.This());
+        return hashmap->hasKey(args[0]);
     }
 
     static Handle<Value> Length(Local<String> property, const AccessorInfo &info)
@@ -164,17 +172,19 @@ public:
         return value;
     }
 
-    void each(Handle<Function> fn, Handle<Object> scope)
+    void each(Handle<Function> fn, Handle<Object> scope, Handle<Object> This)
     {
         for(ValueHash::iterator i = m_hashmap.begin(); i != m_hashmap.end(); ++i)
         {
-            Local<Value> argv[2];
+            Local<Value> argv[3];
             argv[0] = Local<Value>(i->first);
             argv[1] = Local<Value>(i->second);
+            argv[2] = Local<Value>(*This);
 
-            TryCatch try_catch;
+            //TryCatch try_catch;
 
-            fn->Call(scope, 2, argv);
+            fn->Call(scope, 3, argv);
+
         }
     }
 
@@ -182,6 +192,12 @@ public:
     {
         FreeValues();
         m_hashmap.clear();
+    }
+
+    Handle<Value> hasKey(const Handle<Value>& key)
+    {
+        ValueHash::iterator i = m_hashmap.find(*key);
+        return i == m_hashmap.end() ? False() : True();
     }
 
     Handle<Integer> length()
