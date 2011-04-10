@@ -1,29 +1,47 @@
-var hashmap = require('../hashmap');
+var HashMap = require('../hashmap').HashMap,
+    util = require('util'),
+    assert = require('assert');
 
-var hash = new hashmap.HashMap();
+var fn = function(){return 0;},
+    obj = { prop : 'val'},
+    num = 123,
+    str = 'foobar'; 
+    
+var hash = new HashMap();
 
-var a = function(){return 12;},//{ b : 12},
-    c = function(){return 45;},
-    d = {};
+assert.equal(hash.length, 0);
+hash.set(str, num);
+assert.strictEqual(hash.get(str), num)
+assert.equal(hash.length, 1)
+assert.strictEqual(hash.remove(str), num);
+assert.equal(hash.length, 0);
 
-var l = function(){console.log.apply(console, arguments)}
-l('empty', hash.empty())
-hash.set('ololo', 55)
-hash.set(a, 12);
-hash.set(c, 8);
-hash.set(4, 5);
-hash.set(6, 7);
-l('ololo', hash.get('ololo'))
-l(4,hash.get(4))
-l(6,hash.get(6))
-l('a ', hash.get(a));
-l('c ', hash.get(c));
-l('fn ', hash.each(function(k,v) {l(k,v);this.a = 8; throw 'ololo';}, d))
-l('d ', require('util').inspect(d));
-l('remove a : ', hash.remove(a))
-hash.remove('adb');
-l('a ', hash.get(a))
-l('empty', hash.empty())
-l('clear')
-hash.clear()
-l('empty', hash.empty())
+hash.set(str, fn)
+assert.strictEqual(hash.get(str), fn)
+hash.set(str, obj)
+assert.strictEqual(hash.get(str), obj)
+assert.equal(hash.length, 1);
+
+var otherHash = new HashMap();
+assert.strictEqual(otherHash.get(str), undefined);
+assert.equal(otherHash.length, 0);
+otherHash.set(fn, obj).set(obj, fn);
+assert.equal(otherHash.length, 2);
+assert.strictEqual(otherHash.remove(fn), obj);
+
+otherHash.clear()
+assert.equal(otherHash.length, 0);
+assert.equal(hash.length, 1);
+
+hash.set(num, obj);
+hash.set(fn, str);
+hash.set(obj, fn);
+
+var scope = {counter : 0}
+hash.each(function(key, value){
+    console.log(util.inspect(key), ' = ', util.inspect(value));
+    this.counter++;
+}, scope);
+
+assert.equal(hash.length, 4)
+assert.equal(scope.counter, hash.length)
