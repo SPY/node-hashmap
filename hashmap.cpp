@@ -45,8 +45,14 @@ class HashMap : public ObjectWrap {
     ValueHash m_hashmap;
 
 public:
-    HashMap(){
+    HashMap()
+    {
         m_hashmap = ValueHash();
+    }
+
+    ~HashMap()
+    {
+        FreeValues();
     }
 
     static void Initialize(Handle<Object> target) {
@@ -64,7 +70,7 @@ public:
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "empty", Empty);
         NODE_SET_PROTOTYPE_METHOD(constructor_template, "clear", Clear);
         target->Set(String::NewSymbol("HashMap"), constructor_template->GetFunction());
-    };
+    }
 
     static Handle<Value> New(const Arguments &args) {
         HandleScope scope;
@@ -127,16 +133,29 @@ public:
 
     //own methods
     void set(const Handle<Value>& key, const Handle<Value>& value){
-        m_hashmap[*key] = *value;
+        ValueHash::iterator i = m_hashmap.find(*key);
+        if(i == m_hashmap.end())
+            m_hashmap[*key] = *value;
+        else
+        {
+            if(!i->second->Equals(value))
+            {
+                Persistent<Value>(i->second).Dispose();
+                m_hashmap[*key] = *value;
+            }
+        }
     }
 
     Handle<Value> get(const Handle<Value>& key){
-        return Handle<Value>(m_hashmap[*key]);
+        ValueHash::iterator i = m_hashmap.find(*key);
+        return (i == m_hashmap.end()) ? Local<Value>(*Undefined()) : Handle<Value>(i->second);
     }
 
     Handle<Value> remove(const Handle<Value>& key)
     {
         ValueHash::iterator i = m_hashmap.find(*key);
+        if(i == m_hashmap.end())
+            return Undefined();
         Handle<Value> value = Handle<Value>(i->second);
         Persistent<Value>(i->first).Dispose();
         m_hashmap.erase(i);
@@ -164,7 +183,18 @@ public:
 
     void clear()
     {
+        FreeValues();
         m_hashmap.clear();
+    }
+
+    private:
+    void FreeValues()
+    {
+        for(ValueHash::iterator i = m_hashmap.begin(); i != m_hashmap.end(); ++i)
+        {
+            Persistent<Value>(i->first).Dispose();
+            Persistent<Value>(i->second).Dispose();
+        }
     }
 };
 

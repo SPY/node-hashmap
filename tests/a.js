@@ -21,6 +21,7 @@ l('c ', hash.get(c));
 l('fn ', hash.each(function(k,v) {l(k,v);this.a = 8; throw 'ololo';}, d))
 l('d ', require('util').inspect(d));
 l('remove a : ', hash.remove(a))
+hash.remove('adb');
 l('a ', hash.get(a))
 l('empty', hash.empty())
 l('clear')
